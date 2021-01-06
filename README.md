@@ -430,7 +430,9 @@ in vanjo prilepimo naslednje:
 ```
 To pomeni, da se bom vsakih 5minut preko uporabnika **gazic** s pomočjo php ukaza izvedla skripta **poller.php**, ki izvede poizvedbo po sistemu.
 
+### RAFT sistem
 
+//todo matic
 
 
 
