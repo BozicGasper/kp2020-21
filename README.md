@@ -31,7 +31,7 @@ Seveda ne gre brez omembe, da je pri obeh potrebno vedeti tudi geslo za uporabni
 ### DNAT (Destination NAT)
 #### SSH dostop
 V prejšnem razdelku kofniguracije SSH protokola lahko opazimo, da se za vzpostavitev povezave pri nobeni izmed naprav ne uporabljajo standardna vrata za ssh protokol (**22**).
-To smo omogočili s konfiguriranjem preslikovanja naslovov, kjer smo ves promet vrat **3001** pa smo usmerili na priključek ```eth1``` preko ```sk07-dmz``` stikala na naslov ```192.168.7.100:22```, na katerem je dostopen naš **javni Ubuntu strežnik**, ki posluša za promet na vratih 22 (nameščen je <a href="https://www.openssh.com/">**openssh**</a>).
+To smo med drugim omogočili tudi s konfiguriranjem preslikovanja naslovov, kjer smo ves promet vrat **3001** preusmerili na priključek ```eth1``` preko ```sk07-dmz``` stikala na naslov ```192.168.7.100``` na vrata **22**, na katerem je dostopen naš **javni Ubuntu strežnik**, ki posluša za promet na vratih **22** (nameščen je <a href="https://www.openssh.com/">**openssh**</a>).
 ```bash
 rule 10 {
     description "Server ssh"
@@ -47,7 +47,7 @@ rule 10 {
 }
 ```
 #### HTTP dostop
-Naš ubuntu strežnik zunanjemu svetu nudi **RESTful API**, in sicer na vratih 3000. Da lahko do le teh dejansko dostopamo iz zunanjega sveta, je na usmerjevalniku dodana konfiguracija za preusmeritev prometa iz iz vrat **3000** na priključek ```eth1``` na naslov ```192.168.7.100:3000```.
+Naš ubuntu strežnik zunanjemu svetu nudi **RESTful API**, in sicer na vratih **3000**. Da lahko do virov dejansko dostopamo iz zunanjega sveta, je na usmerjevalniku dodana konfiguracija za preusmeritev prometa iz iz vrat **3000** na priključek ```eth1``` na naslov ```192.168.7.100:3000```.
 ```bash
 rule 420 {
     description "server forwarding"
@@ -61,7 +61,7 @@ rule 420 {
     }
 }
 ```
-Skonfigurirana je tudi preusmeritev za ves http promet na vratih 80, ki se prav tako preusmeri do strežnika, kjer je na istih vratih s pomočjo **Apache2** podpore servirana **Cacti** nadzorna stran za **SNMP monitoring**
+Skonfigurirana je tudi preusmeritev za ves promet na vratih **80**, ki se prav tako preusmeri do strežnika, kjer je na enakih vratih s pomočjo podpore *Apache2* servirana *Cacti* nadzorna stran za *SNMP monitoring*
 ```bash
 rule 30 {
     description "80 for cacti"
@@ -75,22 +75,6 @@ rule 30 {
     }
 }
 ```
-#### SNMP dostop
-Na ubuntu sistemu, ki priključen na interno stikalo (```sk07-internal```) so nameščena osnovna <a href="http://www.net-snmp.org/docs/man/">**snmp**</a> orodja za izvajanje poizvedb, na ubuntu strežniku, ki je priklopljen na dmz stikalo (```sk07-dmz```) pa je poleg osnovnih orodij nameščen tudi **snmp agent** (<a href="https://linux.die.net/man/8/snmpd">**snmpd**</a>), ki odgovarja na poizvedbe (npr. ```snmpwalk```).
-```bash
-rule 20 {
-    description "161 from internal to dmz"
-    destination {
-        port 161
-    }
-    inbound-interface eth2
-    protocol udp
-    translation {
-        address 192.168.7.100
-    }
-}
-```
-Kot je možno razbrati, ta konfiguracija ne vpliva na prihod paketov iz zunanjega sveta, temveč le iz priključka ```eth2``` preko protokola udp (*161/udp*)
 ### SNAT (Source NAT)
 
 //todo matic
@@ -118,7 +102,7 @@ nato je bilo potrebno odpreti še vrata za RESTApi, ki ga serviramo na vratih **
 ```bash
 gazic@gazic:~$ sudo ufw allow 3000/tcp
 ```
-Spomnimo se, da za princip testiranja poskušamo izvajati vzorčne klice s *snmp* orodjem iz ubuntu sistema, ki je priključen v internem podomrežju, zato bomo vrata **161** preko protokola **udp** (snmp komunicira preko udp), odrpli le za ves promet, ki prihaja iz podomrežja ```10.0.7.0/24```
+Za princip testiranja poskušamo izvajati vzorčne klice s *snmp* orodjem iz ubuntu sistema, ki je priključen v internem podomrežju, zato bomo vrata **161** preko protokola **udp** (snmp komunicira preko udp), odrpli le za ves promet, ki prihaja iz podomrežja ```10.0.7.0/24```
 ```bash
 gazic@gazic:~$ sudo ufw allow from 10.0.7.0/24 to any port 161 proto udp
 ```
@@ -138,11 +122,10 @@ Status: active
 [ 7] 80/tcp (v6)                ALLOW IN    Anywhere (v6)
 ```
 ### RESTful API storitev
-Na Ubuntu strežniku, ki je dostopen javnosti, na vratih 3000 serviramo Stateless mikrostoritev **Sledilnik števila obiskovalcev**, ki služi kot pripomoček za sledenje števila oseb v zaprtih prostorih ter za kreiranje statistike in poročil o trendih zasedenosti. Ponuja vmesnik, s katerim lahko zaposleni ročno beležijo vstope in izstope, pri čemer lahko beleženje poteka na več vhodih hkrati. Določen uporabnik (pravna oseba) ima pod nadzorom enega ali več prostorov, vsak prostor pa ima enega ali več vhodov. Vsak prostor ima določeno tudi velikost.
-
-Aplikacija med drugim omogoča tudi vnos omejitve števila obiskovalcev na kvadratni meter, na podlagi katere se izračuna dovoljeno število obiskovalcev v prostoru.
+Na Ubuntu strežniku, ki je dostopen javnosti, na vratih 3000 serviramo Stateless mikrostoritev **Sledilnik števila obiskovalcev**, ki služi kot pripomoček za sledenje števila oseb v zaprtih prostorih ter za kreiranje statistike in poročil o trendih zasedenosti. 
+Dostopna točka med drugim omogoča tudi vnos konfiguracijo omejitve števila obiskovalcev na kvadratni meter, na podlagi katere se izračuna dovoljeno število obiskovalcev v prostoru.
 #### Nameščanje Aplikacije
-**Javansko** aplikacijo smo s pomočjo orodja **Docker** stregli v vsebniku, ki je izpostavljen na vratih 3000, hkrati moramo v še enem dodatnem vsebniku poganjati **Postgresql** podatkovno bazo, ki je brezpogojna za celotno funckionalnost aplikacije.
+**Javansko** aplikacijo s pomočjo orodja **Docker** strežemo v vsebniku, ki je izpostavljen na vratih 3000, hkrati moramo v še enem dodatnem vsebniku poganjati **Postgresql** podatkovno bazo, ki je brezpogojna za celotno funckionalnost aplikacije.
 ##### Nameščanje okolja docker
 Najprej smo izvedli najbolj potreben ukaz za vse OCD razvijalce
 ```bash
@@ -168,7 +151,7 @@ Nato smo lahko končno pognali ukaz za prenos in namestitev docker okolja
 ```bash
 gazic@gazic:~$ sudo apt install docker-ce
 ```
-Na smo preverili delovanje
+Nato smo preverili delovanje
 ```bash
 gazic@gazic:~$ sudo systemctl status docker
 ● docker.service - Docker Application Container Engine
@@ -288,7 +271,7 @@ Nato smo konfigurirali dve **php** datoteki, ki sta potrebni za nemoteno izvajan
 gazic@gazic:~$ sudo nano /etc/php/7.4/apache2/php.ini
 gazic@gazic:~$ sudo nano /etc/php/7.4/cli/php.ini
 ```
-V oba smo prilepili naslednje vrstice:
+V obe smo prilepili naslednje vrstice:
 ```ini
 date.timezone = "Europe/Berlin"
 memory_limit = 512M
@@ -303,7 +286,7 @@ z naslednjim ukazom smo uredili datoteko ```50-server.cnf```. Možno je, da je n
 ```bash
 gazic@gazic:~$ sudo nano /etc/mysql/mariadb.conf.d/50-server.cnf
 ```
-Pod sekcijo **[mysql]** smo prilepili naslednje
+Pod sekcijo **[mysql]** smo prilepili naslednje ter shranili.
 ```cnf
 collation-server = utf8mb4_unicode_ci
 max_heap_table_size = 128M
@@ -319,7 +302,7 @@ innodb_io_capacity = 5000
 innodb_io_capacity_max = 10000
 innodb_buffer_pool_instances = 21
 ```
-in nato ponovno zagnali MariaDB strežnik
+Nato smo ponovno zagnali MariaDB storitev
 ```bash
 gazic@gazic:~$ sudo systemctl restart mysql
 ```
@@ -328,10 +311,10 @@ Najprej smo vstopili v lupino MariaDB strežnika
 ```bash
 gazic@gazic:~$ sudo mysql -u root -p
 ```
-Nato smo izvedli naslednje zaporedje ukazov, kjer smo besedo 'password' zamenjali z poljubnim geslom \*\*\*\*\*\*\*.
+Nato smo izvedli naslednje zaporedje ukazov, kjer smo med drugim besedo 'password' zamenjali z poljubnim geslom \*\*\*\*\*\*\*.
 ```bash
 MariaDB [(none)]> create database cacti;
-MariaDB [(none)]> GRANT ALL ON cacti.* TO cactiuser@localhost IDENTIFIED BY 'password';
+MariaDB [(none)]> GRANT ALL ON cacti.* TO cactiuser@localhost IDENTIFIED BY '******';
 MariaDB [(none)]> flush privileges;
 MariaDB [(none)]> exit
 ```
@@ -366,7 +349,7 @@ Potrebno je bilo nastaviti tudi pravilne podatke v konfiguracijski datoteki za M
 ```bash
 gazic@gazic:~$ sudo nano /var/www/html/include/config.php
 ```
-poiskali smo vrstico z vrednostjo **$database_password = 'cactiuser'** in jo spremenili v **$database_password = 'mojeGeslo'** in shranili.
+poiskali smo vrstico z vrednostjo **$database_password = 'cactiuser'** in jo spremenili v **$database_password = '\*\*\*\*\*\*\*'** in shranili.
 
 Nato smo nastavili pravice in lastnika Cacti mape skupini **www-data** in shranili datoteko za spremljanje in zapisovanje dogodgov (log)
 ```bash
@@ -415,12 +398,12 @@ in ponovno zagnali Apache2 storitev
 ```bash
 gazic@gazic:~$ sudo systemctl restart apache2
 ```
-Cacti je bil tokrat dostopen na spletni strani <a href="http://88.200.24.237">http://88.200.24.237</a>.
+Cacti je trenutno dostopen na spletni strani <a href="http://88.200.24.237">http://88.200.24.237</a>.
 
 Namestitev smo dokončali v brskalniku, kjer smo se v vmesnik vpisali z uporabniškim imenom **admin** in geslom **admin**. Cacti nas je nato prisilil v ponovno nastavljanje gesla.
 
 #### Dodan polling za cacti
-S pomočjo **cron.service** daemona lahko izvajamo periodične poizvedbe sistema, to zagotovimo tako, da uredimo datoteko **cactipoller**
+S pomočjo **cron.service** daemona lahko izvajamo periodične poizvedbe sistema, to zagotovimo tako, da ustvarimo novo datoteko **cactipoller**
 ```bash
 gazic@gazic:/$ sudo nano /etc/cron.d/cactipoller
 ```
@@ -428,7 +411,7 @@ in vanjo prilepimo naslednje:
 ```bash
 */5 * * * * gazic php /var/www/html/poller.php > /dev/null 2>&1
 ```
-To pomeni, da se bom vsakih 5minut preko uporabnika **gazic** s pomočjo php ukaza izvedla skripta **poller.php**, ki izvede poizvedbo po sistemu.
+To pomeni, da se bo vsakih **5minut** preko uporabnika **gazic** s pomočjo **php** ukaza izvedla skripta **poller.php**, ki izvede poizvedbo po sistemu.
 
 ### RAFT sistem
 
