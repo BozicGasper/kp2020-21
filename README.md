@@ -137,4 +137,103 @@ Status: active
 [ 6] 3000/tcp (v6)              ALLOW IN    Anywhere (v6)
 [ 7] 80/tcp (v6)                ALLOW IN    Anywhere (v6)
 ```
+### RESTful API storitev
+Na Ubuntu strežniku, ki je dostopen javnosti, na vratih 3000 serviramo Stateless mikrostoritev **Sledilnik števila obiskovalcev**, ki služi kot pripomoček za sledenje števila oseb v zaprtih prostorih ter za kreiranje statistike in poročil o trendih zasedenosti. Ponuja vmesnik, s katerim lahko zaposleni ročno beležijo vstope in izstope, pri čemer lahko beleženje poteka na več vhodih hkrati. Določen uporabnik (pravna oseba) ima pod nadzorom enega ali več prostorov, vsak prostor pa ima enega ali več vhodov. Vsak prostor ima določeno tudi velikost.
+
+Aplikacija med drugim omogoča tudi vnos omejitve števila obiskovalcev na kvadratni meter, na podlagi katere se izračuna dovoljeno število obiskovalcev v prostoru.
+#### Nameščanje Aplikacije
+**Javansko** aplikacijo bomo s pomočjo orodja **Docker** stregli v vsebniku, ki bo izpostavljen na vratih 3000, hkrati pa bomo morali v še enem dodatnem vsebniku poganjati **Postgresql** podatkovno bazo, ki je brezpogojna za celotno funckionalnost aplikacije.
+##### Nameščanje okolja docker
+Najprej zvedemo najbolj potreben ukaz za vse OCD razvijalce
+```bash
+gazic@gazic:~$ sudo apt update
+```
+Nato bomo dodali knjiznjice, ki bodo sistemu ```apt``` dovolile prenos novih knjiznjic preko HTTPS
+```bash
+gazic@gazic:~$ sudo apt install apt-transport-https ca-certificates curl software-properties-common
+```
+Naslednji korak je ta, da dodamo GPG ključ, ki nam omogoča prenos datotek iz uradnega Docker repozitorija
+```bash
+gazic@gazic:~$ curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+```
+Nato dodamo Docker repozitorij med repozitorije, ki so znani programu ```apt``` 
+```bash
+gazic@gazic:~$ sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
+```
+ponovno zaženemo ocd ukaz (tokrat brezpogojno)
+```bash
+gazic@gazic:~$ sudo apt update
+```
+Nato lahko končno poženemo ukaz ta prenos in namestitev docker okolja
+```bash
+gazic@gazic:~$ sudo apt install docker-ce
+```
+Preverimo delovanje
+```bash
+gazic@gazic:~$ sudo systemctl status docker
+● docker.service - Docker Application Container Engine
+     Loaded: loaded (/lib/systemd/system/docker.service; enabled; vendor preset: enabled)
+     Active: active (running) since Wed 2021-01-06 12:01:47 CET; 3h 30min ago
+TriggeredBy: ● docker.socket
+       Docs: https://docs.docker.com
+   Main PID: 1057 (dockerd)
+      Tasks: 30
+     Memory: 179.5M
+     CGroup: /system.slice/docker.service
+             ├─1057 /usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock
+```
+##### Namestitev dodatka Docker Compose
+Da lahko našo aplikacijo zaženemo karseda lahko in brez dolgih spisov v ukazni vrstici, bomo namestili orodje **Docker Compose**, ki služi kot nekaksen dinamičen organizator docker vsebnikov.
+
+Da bomo prenesli res najnovejšo verzijo orodja, bomo to storili preko njihovega uradnega <a href="https://github.com/docker/compose">Github repozitorija</a>.
+```bash
+gazic@gazic:~$ sudo curl -L "https://github.com/docker/compose/releases/download/1.27.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+```
+slednji ukaz bo prenesel in shranil ```executable``` datoteko **docker-compose** v lokalno shrambo uporabnika ```/usr/local/bin/docker-compose```, kar bo omogočilo, da bomo lahko izvedli program kar z ukazom ```$ docker-compose```. Seveda je potrebno nastaviti tudi temu primerne pravice.
+```bash
+gazic@gazic:~$ sudo chmod +x /usr/local/bin/docker-compose
+```
+Instalacijo preverimo z:
+```bash
+gazic@gazic:~$ docker-compose --version
+docker-compose version 1.27.4, build 40524192
+```
+##### Postavitev aplikacije in strežba
+Slika aplikacije se nahaja na DockerHub repozitoriju **mrzic/trendi**. Priraviti je potrebno ustrezeno docker-compose.yml datoteko, da bomo lahko efektivno pognali celotno aplikacijo.
+```yaml
+version: "3"
+services:
+  database:
+    container_name: postgres-trendi
+    image: postgres:latest
+    restart: always
+    environment:
+      POSTGRES_DB: trendi
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - database-data:/var/lib/postgresql/data/
+    ports:
+      - "5432:5432"
+    networks:
+      - omrezje
+  obiskovalci:
+    container_name: obiskovalci
+    image: mrzic/trendi:latest
+    restart: always
+    ports:
+      - "3000:8080"
+    depends_on:
+      - database
+    links:
+      - database
+    networks:
+      - omrezje
+networks:
+  omrezje:
+volumes:
+  database-data:
+```
+
+
 
