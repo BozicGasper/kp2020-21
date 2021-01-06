@@ -419,5 +419,18 @@ Cacti je bil tokrat dostopen na spletni strani <a href="http://88.200.24.237">ht
 
 Namestitev smo dokončali v brskalniku, kjer smo se v vmesnik vpisali z uporabniškim imenom **admin** in geslom **admin**. Cacti nas je nato prisilil v ponovno nastavljanje gesla.
 
+#### Dodan polling za cacti
+S pomočjo **cron.service** daemona lahko izvajamo periodične poizvedbe sistema, to zagotovimo tako, da uredimo datoteko **cactipoller**
+```bash
+gazic@gazic:/$ sudo nano /etc/cron.d/cactipoller
+```
+in vanjo prilepimo naslednje:
+```bash
+*/5 * * * * gazic php /var/www/html/poller.php > /dev/null 2>&1
+```
+To pomeni, da se bom vsakih 5minut preko uporabnika **gazic** s pomočjo php ukaza izvedla skripta **poller.php**, ki izvede poizvedbo po sistemu.
+
+
+
 
 
