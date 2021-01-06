@@ -189,17 +189,23 @@ Da bomo prenesli res najnovejšo verzijo orodja, bomo to storili preko njihovega
 ```bash
 gazic@gazic:~$ sudo curl -L "https://github.com/docker/compose/releases/download/1.27.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
 ```
-slednji ukaz bo prenesel in shranil ```executable``` datoteko **docker-compose** v lokalno shrambo uporabnika ```/usr/local/bin/docker-compose```, kar bo omogočilo, da bomo lahko izvedli program kar z ukazom ```$ docker-compose```. Seveda je potrebno nastaviti tudi temu primerne pravice.
+Slednji ukaz bo prenesel in shranil ```executable``` datoteko **docker-compose** v lokalno shrambo uporabnika ```/usr/local/bin/docker-compose```, kar bo omogočilo, da bomo lahko izvedli program kar z ukazom ```$ docker-compose```. Seveda je potrebno nastaviti tudi temu primerne pravice.
 ```bash
 gazic@gazic:~$ sudo chmod +x /usr/local/bin/docker-compose
 ```
-Instalacijo preverimo z:
+Namestitev preverimo z:
 ```bash
 gazic@gazic:~$ docker-compose --version
 docker-compose version 1.27.4, build 40524192
 ```
 ##### Postavitev aplikacije in strežba
 Slika aplikacije se nahaja na DockerHub repozitoriju **mrzic/trendi**. Priraviti je potrebno ustrezeno docker-compose.yml datoteko, da bomo lahko efektivno pognali celotno aplikacijo.
+```bash
+cd ~
+touch docker-compose.yml
+nano docker-compose.yml
+```
+Prilepimo naslednjo vsebino in shranimo.
 ```yaml
 version: "3"
 services:
@@ -234,6 +240,18 @@ networks:
 volumes:
   database-data:
 ```
+Nato poženemo docker-compose
+```bash
+gazic@gazic:~$ docker-compose up -d
+Creating network "gazic_omrezje" with the default driver
+Creating postgres-trendi ... done
+Creating obiskovalci     ... done
+gazic@gazic:~$ docker ps
+CONTAINER ID   IMAGE                 COMMAND                  CREATED         STATUS         PORTS                    NAMES
+436b992f7c37   mrzic/trendi:latest   "java -jar api-1.0-S…"   7 seconds ago   Up 5 seconds   0.0.0.0:3000->8080/tcp   obiskovalci
+5eb24d2d425c   postgres:latest       "docker-entrypoint.s…"   7 seconds ago   Up 6 seconds   0.0.0.0:5432->5432/tcp   postgres-trendi
+```
+Kot lahko vidimo je vsebnik, v katerem se streže RESTful API izpostavljen na vratih **3000** ( *vsebnik "obiskovalci"* ).
 
-
+Sedaj lahko v brskalniku preverimo delovanje naše RESTful API točke tako, da poskušamo pridobiti **OpenApi** dokumentacijo na naslovu <a href="http://88.200.24.237:3000/api-specs/ui">http://88.200.24.237:3000/api-specs/ui</a>.
 
