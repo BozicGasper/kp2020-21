@@ -142,33 +142,33 @@ Na Ubuntu strežniku, ki je dostopen javnosti, na vratih 3000 serviramo Stateles
 
 Aplikacija med drugim omogoča tudi vnos omejitve števila obiskovalcev na kvadratni meter, na podlagi katere se izračuna dovoljeno število obiskovalcev v prostoru.
 #### Nameščanje Aplikacije
-**Javansko** aplikacijo bomo s pomočjo orodja **Docker** stregli v vsebniku, ki bo izpostavljen na vratih 3000, hkrati pa bomo morali v še enem dodatnem vsebniku poganjati **Postgresql** podatkovno bazo, ki je brezpogojna za celotno funckionalnost aplikacije.
+**Javansko** aplikacijo smo s pomočjo orodja **Docker** stregli v vsebniku, ki je izpostavljen na vratih 3000, hkrati moramo v še enem dodatnem vsebniku poganjati **Postgresql** podatkovno bazo, ki je brezpogojna za celotno funckionalnost aplikacije.
 ##### Nameščanje okolja docker
-Najprej zvedemo najbolj potreben ukaz za vse OCD razvijalce
+Najprej smo izvedli najbolj potreben ukaz za vse OCD razvijalce
 ```bash
 gazic@gazic:~$ sudo apt update
 ```
-Nato bomo dodali knjiznjice, ki bodo sistemu ```apt``` dovolile prenos novih knjiznjic preko HTTPS
+Nato smo dodali knjiznjice, ki so sistemu ```apt``` dovolile prenos novih knjiznjic preko HTTPS
 ```bash
 gazic@gazic:~$ sudo apt install apt-transport-https ca-certificates curl software-properties-common
 ```
-Naslednji korak je ta, da dodamo GPG ključ, ki nam omogoča prenos datotek iz uradnega Docker repozitorija
+Naslednji korak je bil ta, da smo dodali GPG ključ, ki nam je omogočil prenos datotek iz uradnega Docker repozitorija
 ```bash
 gazic@gazic:~$ curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
 ```
-Nato dodamo Docker repozitorij med repozitorije, ki so znani programu ```apt``` 
+Nato smo dodali Docker repozitorij med repozitorije, ki so znani programu ```apt``` 
 ```bash
 gazic@gazic:~$ sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
 ```
-ponovno zaženemo ocd ukaz (tokrat brezpogojno)
+ponovno smo zagnali ocd ukaz (tokrat brezpogojno)
 ```bash
 gazic@gazic:~$ sudo apt update
 ```
-Nato lahko končno poženemo ukaz ta prenos in namestitev docker okolja
+Nato smo lahko končno pognali ukaz za prenos in namestitev docker okolja
 ```bash
 gazic@gazic:~$ sudo apt install docker-ce
 ```
-Preverimo delovanje
+Na smo preverili delovanje
 ```bash
 gazic@gazic:~$ sudo systemctl status docker
 ● docker.service - Docker Application Container Engine
@@ -183,29 +183,29 @@ TriggeredBy: ● docker.socket
              ├─1057 /usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock
 ```
 ##### Namestitev dodatka Docker Compose
-Da lahko našo aplikacijo zaženemo karseda lahko in brez dolgih spisov v ukazni vrstici, bomo namestili orodje **Docker Compose**, ki služi kot nekaksen dinamičen organizator docker vsebnikov.
+Da smo lahko našo aplikacijo zagnali karseda lahko in brez dolgih spisov v ukazni vrstici, smo namestili orodje **Docker Compose**, ki služi kot nekaksen dinamičen organizator docker vsebnikov.
 
-Da bomo prenesli res najnovejšo verzijo orodja, bomo to storili preko njihovega uradnega <a href="https://github.com/docker/compose">Github repozitorija</a>.
+Da smo prenesli res najnovejšo verzijo orodja, smo to storili preko njihovega uradnega <a href="https://github.com/docker/compose">Github repozitorija</a>.
 ```bash
 gazic@gazic:~$ sudo curl -L "https://github.com/docker/compose/releases/download/1.27.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
 ```
-Slednji ukaz bo prenesel in shranil ```executable``` datoteko **docker-compose** v lokalno shrambo uporabnika ```/usr/local/bin/docker-compose```, kar bo omogočilo, da bomo lahko izvedli program kar z ukazom ```$ docker-compose```. Seveda je potrebno nastaviti tudi temu primerne pravice.
+Slednji ukaz je prenesel in shranil ```executable``` datoteko **docker-compose** v lokalno shrambo uporabnika ```/usr/local/bin/docker-compose```, kar je omogočilo, da smo lahko izvedli program kar z ukazom ```$ docker-compose```. Seveda je bilo potrebno nastaviti tudi temu primerne pravice.
 ```bash
 gazic@gazic:~$ sudo chmod +x /usr/local/bin/docker-compose
 ```
-Namestitev preverimo z:
+Namestitev smo preverili z:
 ```bash
 gazic@gazic:~$ docker-compose --version
 docker-compose version 1.27.4, build 40524192
 ```
 ##### Postavitev aplikacije in strežba
-Slika aplikacije se nahaja na DockerHub repozitoriju **mrzic/trendi**. Priraviti je potrebno ustrezeno docker-compose.yml datoteko, da bomo lahko efektivno pognali celotno aplikacijo.
+Slika aplikacije se nahaja na DockerHub repozitoriju **mrzic/trendi**. Priraviti je bilo potrebno ustrezeno docker-compose.yml datoteko, da smo lahko efektivno pognali celotno aplikacijo.
 ```bash
-cd ~
-touch docker-compose.yml
-nano docker-compose.yml
+gazic@gazic:~$ cd ~
+gazic@gazic:~$ touch docker-compose.yml
+gazic@gazic:~$ nano docker-compose.yml
 ```
-Prilepimo naslednjo vsebino in shranimo.
+Prilepili smo naslednjo vsebino in shranili.
 ```yaml
 version: "3"
 services:
@@ -240,7 +240,7 @@ networks:
 volumes:
   database-data:
 ```
-Nato poženemo docker-compose
+Nato smo pognali docker-compose
 ```bash
 gazic@gazic:~$ docker-compose up -d
 Creating network "gazic_omrezje" with the default driver
@@ -254,4 +254,170 @@ CONTAINER ID   IMAGE                 COMMAND                  CREATED         ST
 Kot lahko vidimo je vsebnik, v katerem se streže RESTful API izpostavljen na vratih **3000** ( *vsebnik "obiskovalci"* ).
 
 Sedaj lahko v brskalniku preverimo delovanje naše RESTful API točke tako, da poskušamo pridobiti **OpenApi** dokumentacijo na naslovu <a href="http://88.200.24.237:3000/api-specs/ui">http://88.200.24.237:3000/api-specs/ui</a>.
+
+### SNMP monitoring preko grafičnega vmesnika Cacti
+Da smo lahko na ubuntu sistemu servirali grafični vmesnik preko brskalnika, smo bili primorani zagotoviti naslednje:
+- RRDTool 1.0.49 ali več
+- MySQL 5.x ali več
+- PHP 5.1 ali več
+- Spletni strežnik, ki podpira PHP (**v našem primeru je bil to Apache**)
+#### Namestitev potrebščin
+Najprej je bilo potrebno posodobiti vse sistemske pakete
+```bash
+gazic@gazic:~$ sudo apt update && sudo apt upgrade
+```
+Namestili smo Apache2 Spletni Strežnik
+```bash
+gazic@gazic:~$ sudo apt install -y apache2 libapache2-mod-php
+```
+Namestili smo PHP in vse potrebne pakete
+```bash
+gazic@gazic:~$ sudo apt install -y php php-mysql php-snmp php-curl php-xml php-gd php-ldap php-mbstring php-gmp php-json php-common
+```
+Namestili smo MariaDB strežnik
+```bash
+gazic@gazic:~$ sudo apt install -y mariadb-server mariadb-client
+```
+Namestili smo SNMP in RRDtool
+```bash
+gazic@gazic:~$ sudo apt install -y snmp snmpd snmp-mibs-downloader rrdtool librrds-perl
+```
+#### Konfiguracija PHP-ja
+Nato smo konfigurirali dve **php** datoteki, ki sta potrebni za nemoteno izvajanje Cacti vmesnika
+```bash
+gazic@gazic:~$ sudo nano /etc/php/7.4/apache2/php.ini
+gazic@gazic:~$ sudo nano /etc/php/7.4/cli/php.ini
+```
+V oba smo prilepili naslednje vrstice:
+```ini
+date.timezone = "Europe/Berlin"
+memory_limit = 512M
+max_execution_time = 60
+```
+Po končanem zgornjem opravilu smo resetirali storitev apache2.
+```bash
+gazic@gazic:~$ sudo systemctl restart apache2
+```
+#### Konfiguracija MariaDB podatkovnega serverja
+z naslednjim ukazom smo uredili datoteko ```50-server.cnf```. Možno je, da je na drugem sistemu ta datoteka poimenovana drugače, ampak zagotovo je b obliki ```XX-server.cnf```.
+```bash
+gazic@gazic:~$ sudo nano /etc/mysql/mariadb.conf.d/50-server.cnf
+```
+Pod sekcijo **[mysql]** smo prilepili naslednje
+```cnf
+collation-server = utf8mb4_unicode_ci
+max_heap_table_size = 128M
+tmp_table_size = 128M
+join_buffer_size = 256M
+innodb_file_format = Barracuda
+innodb_large_prefix = 1
+innodb_buffer_pool_size = 2048M
+innodb_flush_log_at_timeout = 3
+innodb_read_io_threads = 32
+innodb_write_io_threads = 16
+innodb_io_capacity = 5000
+innodb_io_capacity_max = 10000
+innodb_buffer_pool_instances = 21
+```
+in nato ponovno zagnali MariaDB strežnik
+```bash
+gazic@gazic:~$ sudo systemctl restart mysql
+```
+#### Kreacija podatkovne baze za Cacti
+Najprej smo vstopili v lupino MariaDB strežnika
+```bash
+gazic@gazic:~$ sudo mysql -u root -p
+```
+Nato smo izvedli naslednje zaporedje ukazov, kjer smo besedo 'password' zamenjali z poljubnim geslom \*\*\*\*\*\*\*.
+```bash
+MariaDB [(none)]> create database cacti;
+MariaDB [(none)]> GRANT ALL ON cacti.* TO cactiuser@localhost IDENTIFIED BY 'password';
+MariaDB [(none)]> flush privileges;
+MariaDB [(none)]> exit
+```
+Vnesli smo podatkovno bazo časovnih območij v MariaDB strežnik
+```bash
+gazic@gazic:~$ sudo mysql -u root -p mysql < /usr/share/mysql/mysql_test_data_timezone.sql
+gazic@gazic:~$ sudo mysql -u root -p
+```
+In dovolili uporabniku za Cacti (cactiuser) nad njo SELECT pravice
+```bash
+MariaDB [(none)]> GRANT SELECT ON mysql.time_zone_name TO cactiuser@localhost;
+MariaDB [(none)]> flush privileges;
+MariaDB [(none)]> exit
+```
+#### Prenos in namestitev Cacti vmesnika
+Najprej smo se premaknili v mapo, kjer apache2 streže naše statične datoteke, in prenesli zandjo različico programa Cacti
+```bash
+gazic@gazic:~$ cd /var/www/html
+gazic@gazic:~/var/www/html$ sudo rm index.html
+gazic@gazic:~/var/www/html$ sudo wget https://www.cacti.net/downloads/cacti-latest.tar.gz
+...
+gazic@gazic:~/var/www/html$ sudo tar zxvf cacti-latest.tar.gz
+...
+gazic@gazic:~/var/www/html$ cd cacti-1.2.16/
+gazic@gazic:~/var/www/html/cacti-1.2.16$ sudo mv * /var/www/html/
+```
+Vnesli smo podatkovno bazo od Cacti v MariaDB strežnik
+```bash
+gazic@gazic:~$ sudo mysql -u root -p cacti < /var/www/html/cacti.sql
+```
+Potrebno je bilo nastaviti tudi pravilne podatke v konfiguracijski datoteki za MySql od Cacti
+```bash
+gazic@gazic:~$ sudo nano /var/www/html/include/config.php
+```
+poiskali smo vrstico z vrednostjo **$database_password = 'cactiuser'** in jo spremenili v **$database_password = 'mojeGeslo'** in shranili.
+
+Nato smo nastavili pravice in lastnika Cacti mape skupini **www-data** in shranili datoteko za spremljanje in zapisovanje dogodgov (log)
+```bash
+gazic@gazic:~$ sudo touch /var/www/html/log/cacti.log
+gazic@gazic:~$ sudo chown -R www-data:www-data /var/www/html/*
+```
+
+Ponovno smo zagnali apache2 storitev
+```bash
+gazic@gazic:~$ sudo systemctl restart apache2
+```
+Cacti je bil tokrat dostopen na spletnem naslovu <a href="http://88.200.24.237/cacti">http://88.200.24.237/cacti</a>.
+
+Šli smo še korak dlje in uredili zapisnik od strežnika Apache2, tako da Cacti ne bi bil dostopne na naslovu /cacti ampak kar na korenskem naslovu
+```bash
+gazic@gazic:~$ sudo nano /etc/apache2/sites-enabled/cacti.conf
+```
+Vstavili naslednje
+```conf
+Alias /cacti /var/www/html
+<Directory /var/www/html>
+Options +FollowSymLinks
+AllowOverride None
+<IfVersion >= 2.3>
+Require all granted
+</IfVersion>
+<IfVersion < 2.3>
+Order Allow,Deny
+Allow from all
+</IfVersion>
+AddType application/x-httpd-php .php
+<IfModule mod_php.c>
+php_flag magic_quotes_gpc Off
+php_flag short_open_tag On
+php_flag register_globals Off
+php_flag register_argc_argv On
+php_flag track_vars On
+# this setting is necessary for some locales
+php_value mbstring.func_overload 0
+php_value include_path .
+</IfModule>
+DirectoryIndex index.php
+</Directory>
+```
+in ponovno zagnali Apache2 storitev
+```bash
+gazic@gazic:~$ sudo systemctl restart apache2
+```
+Cacti je bil tokrat dostopen na spletni strani <a href="http://88.200.24.237">http://88.200.24.237</a>.
+
+Namestitev smo dokončali v brskalniku, kjer smo se v vmesnik vpisali z uporabniškim imenom **admin** in geslom **admin**. Cacti nas je nato prisilil v ponovno nastavljanje gesla.
+
+
 
