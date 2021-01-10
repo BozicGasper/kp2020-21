@@ -29,7 +29,9 @@ Seveda ne gre brez omembe, da je pri obeh potrebno vedeti tudi geslo za uporabni
 
 ## Osnovna VyOS konfiguracija
 
-Za pravilno komunikacijo v omrežju, je bilo na usmerjevalniku VyOS nastaviti osnovno konfiguracijo za DNS in DHCP. Za DNS omrežje ne uporablja lastnega DNS strežnika, temveč zahteve posreduje (```dns-forwarding```) na Googlov ali ARNESov DNS strežnik. 
+Za pravilno komunikacijo v omrežju, je bilo na usmerjevalniku VyOS nastaviti osnovno konfiguracijo za DNS in DHCP. Za DNS omrežje ne uporablja lastnega DNS strežnika, temveč zahteve posreduje (```dns-forwarding```) na Googlov ali ARNESov DNS strežnik na naslovih ```IPv4 8.8.8.8, IPv6 2001:4860:4860::8888``` (Googlov primarni DNS strežnik) in ```IPv4 193.2.1.66 IPv6 2001:1470:8000::66``` (ARNESov primarni DNS strežnik).
+
+\\TODO: DHCP ko poštimam NPTv6
 
 ## NAT konfiguracija usmerjevalnika
 ### DNAT (Destination NAT)
