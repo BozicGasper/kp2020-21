@@ -27,6 +27,10 @@ Za lažji in manj okreten nadzor sta **vyos** usmerjevalnik in **javni Ubuntu st
 
 Seveda ne gre brez omembe, da je pri obeh potrebno vedeti tudi geslo za uporabnika, s katerim se želimo prijaviti
 
+## Osnovna VyOS konfiguracija
+
+Za pravilno komunikacijo v omrežju, je bilo na usmerjevalniku VyOS nastaviti osnovno konfiguracijo za DNS in DHCP. Za DNS omrežje ne uporablja lastnega DNS strežnika, temveč zahteve posreduje (```dns-forwarding```) na Googlov ali ARNESov DNS strežnik. 
+
 ## NAT konfiguracija usmerjevalnika
 ### DNAT (Destination NAT)
 #### SSH dostop
@@ -415,7 +419,7 @@ To pomeni, da se bo vsakih **5minut** preko uporabnika **gazic** s pomočjo **ph
 
 ### RAFT sistem
 
-//todo matic
+//Če ga implementiram...
 
 
 
