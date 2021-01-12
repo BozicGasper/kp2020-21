@@ -29,7 +29,10 @@ Seveda ne gre brez omembe, da je pri obeh potrebno vedeti tudi geslo za uporabni
 
 ## Osnovna VyOS konfiguracija
 
-Za pravilno komunikacijo v omrežju, je bilo na usmerjevalniku VyOS nastaviti osnovno konfiguracijo vmesnikov ter konfiguracijo za DNS in DHCP. Za DNS omrežje ne uporablja lastnega DNS strežnika, temveč zahteve posreduje (```dns-forwarding```) na Googlov ali ARNESov DNS strežnik na naslovih ```IPv4 8.8.8.8, IPv6 2001:4860:4860::8888``` (Googlov primarni DNS strežnik) in ```IPv4 193.2.1.66 IPv6 2001:1470:8000::66``` (ARNESov primarni DNS strežnik).
+Za pravilno komunikacijo v omrežju, je bilo na usmerjevalniku VyOS potrebno nastaviti osnovno konfiguracijo vmesnikov ter konfiguracijo za DNS in DHCP. 
+
+Za DNS omrežje ne uporabljamo lastnega DNS strežnika, temveč zahteve posredujemo (```dns-forwarding```) na Googlov ali ARNESov DNS strežnik na naslovih ```IPv4 8.8.8.8, IPv6 2001:4860:4860::8888``` (Googlov primarni DNS strežnik) in ```IPv4 193.2.1.66 IPv6 2001:1470:8000::66``` (ARNESov primarni DNS strežnik).
+
 VyOs prav tako dodeljuje IPv4 in IPv6 naslove napravam v omrežju. Za IPv4 je nastavljen DHCP strežnik s spodnjo konfiguracijo:
 ```
 dhcp-server {
@@ -59,9 +62,14 @@ dhcp-server {
          }
 
 ``` 
-Vsak VyOS-ov vmesnik se nahaja v svojem naslovnem prostoru. Zgornja konfiguracija določi za vsak segment z omrežno masko ```/24``` določi razpon naslovov, ki jih DHCP strežnik dodeljuje posameznem segmentu (za oba segmenta je rezerviranih 90 IP naslovov, ki se dodelijo s pomočjo DHCP). Prav tako pa je narejena statična DHCP rezervacija naslova oz. t.i. "static-mapping" na naslovu ```192.168.7.100```, kjer se nahaja Ubuntu strežnik, zato da vedno (ob morebitnem ponovnem zagonu) dobi isti IP naslov. Ta statična rezervacija, poimenovana ```static1``` veže iP naslov ```192.168.7.100``` na MAC naslov mrežnega vmesnika Ubuntu strežnika.
-Za dodeljevanje IPv6 naslovov sta uporabljena dva pristopa: DHCPv6 (v DMZ) in SLAAC (v internal in ipv6only segmentu). Kot pri DHCP je tudi pri DHCPv6 narejena statična rezervacija IP naslova za Ubuntu strežnik, ki mu dodeli IPv6 naslov ```2001:1470:fffd:99::100```. 
-V notranjem in ipv6only segmentu je uporabljen pristop SLAAC, k s pomočjo storitve ```router-advert``` na poameznem vmesniku oglašuje IPv6 predpono, ki je dolga osem oktetov. Za končnico poskrbi eui64, ki veže MAC naslov na zadnjih 8 oktetov naslova. Zaradi unikatnosti MAC naslovov, se izognemo podvajanju IPv6 naslovov znotraj segmenta. 
+Vsak VyOS-ov vmesnik se nahaja v svojem naslovnem prostoru. Zgornja konfiguracija za vsak segment z omrežno masko ```/24``` določi razpon naslovov, ki jih DHCP strežnik dodeljuje posameznem segmentu (za oba segmenta je rezerviranih 90 IP naslovov, ki se dodelijo s pomočjo DHCP). Prav tako pa je narejena statična DHCP rezervacija naslova oz. t.i. "static-mapping" na naslovu ```192.168.7.100```, kjer se nahaja Ubuntu strežnik, zato da vedno (ob morebitnem ponovnem zagonu) dobi isti IP naslov. Ta statična rezervacija, poimenovana ```static1``` veže iP naslov ```192.168.7.100``` na MAC naslov mrežnega vmesnika Ubuntu strežnika.
+
+Za dodeljevanje IPv6 naslovov sta uporabljena dva pristopa:
+- DHCPv6 (v DMZ) *in*
+- SLAAC (v internal in ipv6only segmentu). 
+
+Kot pri DHCP je tudi pri DHCPv6 narejena statična rezervacija IP naslova za Ubuntu strežnik, ki mu dodeli IPv6 naslov ```2001:1470:fffd:99::100```. 
+V notranjem in ipv6only segmentu je uporabljen pristop **SLAAC**, k s pomočjo storitve ```router-advert``` na poameznem vmesniku oglašuje IPv6 predpono, ki je dolga osem oktetov. Za končnico poskrbi **eui64**, ki veže MAC naslov na zadnjih 8 oktetov naslova. Zaradi unikatnosti MAC naslovov, se izognemo podvajanju IPv6 naslovov znotraj segmenta. 
 
 
 ## NAT konfiguracija usmerjevalnika
@@ -114,7 +122,8 @@ rule 30 {
 ```
 ### SNAT (Source NAT)
 
-Za source NAT sta le dve pravili za translacijo internih IP naslovov. Prvo pravilo naredi masquerade translacijo IP naslovov notranjega omrežja (```10.7.0.0/24```), drugo pa naredi masquerade translacijo ip naslovov DMZ cone (```92.168.7.0/24```). 
+Za source NAT sta nastavljeni le dve pravili za translacijo internih IP naslovov. Prvo pravilo naredi **masquerade** translacijo IP naslovov ```internal``` podomre
+ja (```10.7.0.0/24```), drugo pa naredi masquerade translacijo ip naslovov ```DMZ``` cone (```92.168.7.0/24```). 
 ```
 source {
      rule 100 {
