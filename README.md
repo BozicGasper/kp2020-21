@@ -150,13 +150,39 @@ Prav ti dve pravili skrbita za komunikacijo z javnim internetom.
 
 ### NPTv6
 
-//TODO ko se najde workaround...
+V Ipv6only segment uporablja NPTv6 za preslikavo privatnih ULA naslovov, ki so v segmentu, v javen naslovni prostor, ki je dodeljen segmentu. Naslove ```fc00:dead:beef::/64``` iz segmenta preslika v javne naslove ```2001:1470:fffd:9b::/64```. Konfiguracija NPTv6 je sledeča: 
+
+```
+ rule 13 {
+     description NPT_IPV6_ONLY
+     outbound-interface eth0
+     source {
+         prefix fc00:dead:beef::/64
+     }
+     translation {
+         prefix 2001:1470:fffd:9b::/64
+     }
+ }
+``` 
+Za ustrezno delovanje je bilo potrebno dodati tudi pravilo na požarni zid (VyOS bug).
 
 ### Konfiguracija Požarnih zidov
 
 #### Vyos
 
-//todo matic
+Na VyOSovo požarno pregrado je bilo, zaradi buga pri implementaciji NPTv6 v VyOS, dodati naslednje pravilo:
+
+```
+ ipv6-name nptv6 {
+     rule 1 {
+         action accept
+         state {
+             established enable
+             related enable
+         }
+     }
+ }
+```
  
 #### Javni Ubuntu strežnik
 Za Ubuntu strežnik, ki ga uporabljamo za serviranje **RESTApi-ja** ter statične spletne strani za monitoring (**cacti**), je konfiguracija potekala takole:
@@ -486,9 +512,6 @@ in vanjo prilepimo naslednje:
 ```
 To pomeni, da se bo vsakih **5minut** preko uporabnika **gazic** s pomočjo **php** ukaza izvedla skripta **poller.php**, ki izvede poizvedbo po sistemu.
 
-### RAFT sistem
-
-//Če ga implementiram...
 
 
 
