@@ -75,8 +75,8 @@ V notranjem in ipv6only segmentu je uporabljen pristop **SLAAC**, k s pomočjo s
 ## NAT konfiguracija usmerjevalnika
 ### DNAT (Destination NAT)
 #### SSH dostop
-V prejšnem razdelku kofniguracije SSH protokola lahko opazimo, da se za vzpostavitev povezave pri nobeni izmed naprav ne uporabljajo standardna vrata za ssh protokol (**22**).
-To smo med drugim omogočili tudi s konfiguriranjem preslikovanja naslovov, kjer smo ves promet vrat **3001** preusmerili na priključek ```eth1``` preko ```sk07-dmz``` stikala na naslov ```192.168.7.100``` na vrata **22**, na katerem je dostopen naš **javni Ubuntu strežnik**, ki posluša za promet na vratih **22** (nameščen je <a href="https://www.openssh.com/">**openssh**</a>).
+V prejšnem razdelku konfiguracije SSH protokola lahko opazimo, da se za vzpostavitev povezave pri nobeni izmed naprav ne uporabljajo standardna vrata za ssh protokol (**22**).
+To smo med drugim omogočili tudi s konfiguriranjem preslikovanja naslovov, kjer smo ves promet vrat **3001** preusmerili na priključek ```eth1``` preko ```sk07-dmz``` stikala na naslov ```192.168.7.100``` na vrata **22**, kjer je dostopen naš **javni Ubuntu strežnik**, ki posluša za promet na vratih **22** (nameščen je <a href="https://www.openssh.com/">**openssh**</a>).
 ```bash
 rule 10 {
     description "Server ssh"
@@ -122,8 +122,7 @@ rule 30 {
 ```
 ### SNAT (Source NAT)
 
-Za source NAT sta nastavljeni le dve pravili za translacijo internih IP naslovov. Prvo pravilo naredi **masquerade** translacijo IP naslovov ```internal``` podomre
-ja (```10.7.0.0/24```), drugo pa naredi masquerade translacijo ip naslovov ```DMZ``` cone (```92.168.7.0/24```). 
+Za source NAT sta nastavljeni le dve pravili za translacijo internih IP naslovov. Prvo pravilo naredi **masquerade** translacijo IP naslovov ```internal``` podomrežja (```10.7.0.0/24```), drugo pa naredi masquerade translacijo ip naslovov ```DMZ``` cone (```92.168.7.0/24```). 
 ```
 source {
      rule 100 {
