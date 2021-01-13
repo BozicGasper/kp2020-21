@@ -31,7 +31,11 @@ Seveda ne gre brez omembe, da je pri obeh potrebno vedeti tudi geslo za uporabni
 
 Za pravilno komunikacijo v omrežju, je bilo na usmerjevalniku VyOS potrebno nastaviti osnovno konfiguracijo vmesnikov ter konfiguracijo za DNS in DHCP. 
 
-Za DNS omrežje ne uporabljamo lastnega DNS strežnika, temveč zahteve posredujemo (```dns-forwarding```) na Googlov ali ARNESov DNS strežnik na naslovih ```IPv4 8.8.8.8, IPv6 2001:4860:4860::8888``` (Googlov primarni DNS strežnik) in ```IPv4 193.2.1.66 IPv6 2001:1470:8000::66``` (ARNESov primarni DNS strežnik).
+Za DNS omrežje ne uporabljamo lastnega DNS strežnika, temveč zahteve posredujemo (```dns-forwarding```) na Googlov ali ARNESov DNS strežnik na naslovih ```IPv4 8.8.8.8, IPv6 2001:4860:4860::8888``` (Googlov primarni DNS strežnik) in ```IPv4 193.2.1.66 IPv6 2001:1470:8000::66``` (ARNESov primarni DNS strežnik). Za ipv6only segment je nastavljen googlov primarni ipv6 DNS strežnik ```2001:1470:8000::66``` preko router adverta.
+
+```
+
+```
 
 VyOs prav tako dodeljuje IPv4 in IPv6 naslove napravam v omrežju. Za IPv4 je nastavljen DHCP strežnik s spodnjo konfiguracijo:
 ```
