@@ -25,7 +25,7 @@ Za lažji in manj okreten nadzor sta **vyos** usmerjevalnik in **javni Ubuntu st
 - do usmerjevalnika vyos lahko dostopamo z ukazom ```ssh vyos@88.200.24.237 -p 312```
 - do strežnika Ubuntu, priklopljenega na *sk07-dmz* stikalo, lahko dostopamo z ukazom ```ssh gazic@88.200.24.237 -p 3001```
 
-Seveda ne gre brez omembe, da je pri obeh potrebno vedeti tudi geslo za uporabnika, s katerim se želimo prijaviti
+Seveda ne gre brez omembe, da je pri obeh potrebno vedeti tudi geslo za uporabnika, s katerim se želimo prijaviti.
 
 ## Osnovna VyOS konfiguracija
 
@@ -33,9 +33,6 @@ Za pravilno komunikacijo v omrežju, je bilo na usmerjevalniku VyOS potrebno nas
 
 Za DNS omrežje ne uporabljamo lastnega DNS strežnika, temveč zahteve posredujemo (```dns-forwarding```) na Googlov ali ARNESov DNS strežnik na naslovih ```IPv4 8.8.8.8, IPv6 2001:4860:4860::8888``` (Googlov primarni DNS strežnik) in ```IPv4 193.2.1.66 IPv6 2001:1470:8000::66``` (ARNESov primarni DNS strežnik). Za ipv6only segment je nastavljen googlov primarni ipv6 DNS strežnik ```2001:1470:8000::66``` preko router adverta.
 
-```
-
-```
 
 VyOs prav tako dodeljuje IPv4 in IPv6 naslove napravam v omrežju. Za IPv4 je nastavljen DHCP strežnik s spodnjo konfiguracijo:
 ```
@@ -79,7 +76,7 @@ V notranjem in ipv6only segmentu je uporabljen pristop **SLAAC**, k s pomočjo s
 ## NAT konfiguracija usmerjevalnika
 ### DNAT (Destination NAT)
 #### SSH dostop
-V prejšnem razdelku konfiguracije SSH protokola lahko opazimo, da se za vzpostavitev povezave pri nobeni izmed naprav ne uporabljajo standardna vrata za ssh protokol (**22**).
+V prejšnem razdelku konfiguracije SSH protokola lahko opazimo, da se za vzpostavitev povezave pri nobeni izmed naprav ne uporabljajo standardnih vrat za ssh protokol (**22**).
 To smo med drugim omogočili tudi s konfiguriranjem preslikovanja naslovov, kjer smo ves promet vrat **3001** preusmerili na priključek ```eth1``` preko ```sk07-dmz``` stikala na naslov ```192.168.7.100``` na vrata **22**, kjer je dostopen naš **javni Ubuntu strežnik**, ki posluša za promet na vratih **22** (nameščen je <a href="https://www.openssh.com/">**openssh**</a>).
 ```bash
 rule 10 {
@@ -110,7 +107,7 @@ rule 420 {
     }
 }
 ```
-Skonfigurirana je tudi preusmeritev za ves promet na vratih **80**, ki se prav tako preusmeri do strežnika, kjer je na enakih vratih s pomočjo podpore *Apache2* servirana *Cacti* nadzorna stran za *SNMP monitoring*
+Skonfigurirana je tudi preusmeritev za ves promet na vratih **80**, ki se prav tako preusmeri do strežnika, kjer je na enakih vratih s pomočjo podpore *Apache2* servirana *Cacti* nadzorna stran za *SNMP monitoring*.
 ```bash
 rule 30 {
     description "80 for cacti"
@@ -537,7 +534,7 @@ z naslednjim ukazom smo uredili datoteko ```50-server.cnf```. Možno je, da je n
 gazic@gazic:~$ sudo nano /etc/mysql/mariadb.conf.d/50-server.cnf
 ```
 Pod sekcijo **[mysql]** smo prilepili naslednje ter shranili.
-```cnf
+```file
 collation-server = utf8mb4_unicode_ci
 max_heap_table_size = 128M
 tmp_table_size = 128M
@@ -662,6 +659,23 @@ in vanjo prilepimo naslednje:
 */5 * * * * gazic php /var/www/html/poller.php > /dev/null 2>&1
 ```
 To pomeni, da se bo vsakih **5minut** preko uporabnika **gazic** s pomočjo **php** ukaza izvedla skripta **poller.php**, ki izvede poizvedbo po sistemu.
+
+#### Težave z Cacti Data-collectorji
+
+Za nadzorovano poizvedovanje in grafični prikaz specifičnih trenutnih lastnosti strežnika, smo dodali Data Collector, ki je bil registriran kot **Main Poller**. 
+
+Celoten koncept periodičnega poizvedovanja je predstavljal konstantno težavo z **časovnimi omejitvami izvajanja Main Poller-ja**, kar je rezultiralo v to, da se v mapi **rra** v korenski mapi programa Cacti, ni ustvarila niti ena datoteka tipa **rrd**, ki bi jo Cacti lahk prebral in predstavil v grafičnem vmesniku.
+
+Poizvedovanje naj bi se izvedlo s pomočjo datoteke ```poller.php```, ki jo s pomočjo *cron.service* izvajamo vsakih 5minut.
+
+Po vsaki poizvedbi pa je Main Poller prekoračil časovno omejitov ~299sekund (5minut). 
+
+Če smo nastavili periodo na 10minut, se je iz nekega razloga Poller ustvaril že na polovici izvajanja prejšnje instance, kar je povzročilo izjemo, ki je prav tako onemogočila uspešno mapiranje podatkov.
+
+Grafični izpis v cactiju:
+<img src="cacti.png" style="border-radius:1rem;margin:1rem">
+
+
 
 
 
