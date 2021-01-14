@@ -174,18 +174,165 @@ Za ustrezno delovanje je bilo potrebno dodati tudi pravilo na požarni zid (VyOS
 
 #### Vyos
 
-Na VyOSovo požarno pregrado je bilo, zaradi buga pri implementaciji NPTv6 v VyOS, dodati naslednje pravilo:
+Sistem požarnih zidov na vyosu je povzročal težave. Po mnogih različnih poskusih ustvarjanja varnega pretoka skozi vyos s pomočjo požarnih zidov, nismo prišli do uspešnega zaključka.
+
+Spodaj je prilepljena koda naše vyos konfiguracije za požarne zidove:
 
 ```
- ipv6-name nptv6 {
-     rule 1 {
-         action accept
-         state {
-             established enable
-             related enable
-         }
-     }
- }
+vyos@EdgeRouter:~$ show firewall
+
+------------------------
+Firewall Global Settings
+------------------------
+
+Firewall state-policy for all IPv4 and Ipv6 traffic
+
+state           action   log
+-----           ------   ---
+invalid         drop     disabled
+established     accept   disabled
+related         accept   disabled
+
+-----------------------------
+Rulesets Information
+-----------------------------
+--------------------------------------------------------------------------------
+IPv4 Firewall "DMZ-IN-4":
+
+ Inactive - Not applied to any interfaces or zones.
+
+rule  action   proto     packets  bytes
+----  ------   -----     -------  -----
+10    accept   all       0        0
+  condition - saddr 0.0.0.0/0 daddr 0.0.0.0/0 /* DMZ-IN-4-10 */
+
+11    accept   all       10       718
+  condition - saddr 0.0.0.0/0 daddr 0.0.0.0/0 /* DMZ-IN-4-11 */
+
+12    accept   all       0        0
+  condition - saddr 0.0.0.0/0 daddr 0.0.0.0/0 match-DST-PORT-GROUP NUJNI /* DMZ-
+              IN-4-12 */
+
+10000 drop     all       3        252
+  condition - saddr 0.0.0.0/0 daddr 0.0.0.0/0
+
+--------------------------------------------------------------------------------
+IPv4 Firewall "INT4":
+
+ Inactive - Not applied to any interfaces or zones.
+
+rule  action   proto     packets  bytes
+----  ------   -----     -------  -----
+10    accept   all       0        0
+  condition - saddr 0.0.0.0/0 daddr 0.0.0.0/0 match-DST-PORT-GROUP NUJNI /* INT4
+              -10 */
+
+10000 drop     all       0        0
+  condition - saddr 0.0.0.0/0 daddr 0.0.0.0/0
+
+--------------------------------------------------------------------------------
+IPv4 Firewall "WAN4":
+
+ Inactive - Not applied to any interfaces or zones.
+
+rule  action   proto     packets  bytes
+----  ------   -----     -------  -----
+10    accept   all       0        0
+  condition - saddr 0.0.0.0/0 daddr 0.0.0.0/0 match-DST-PORT-GROUP NUJNI /* WAN4
+              -10 */
+
+10000 drop     all       74       5369
+  condition - saddr 0.0.0.0/0 daddr 0.0.0.0/0
+
+--------------------------------------------------------------------------------
+IPv6 Firewall "DMZ-IN-6":
+
+ Inactive - Not applied to any interfaces or zones.
+
+rule  action   proto     packets  bytes
+----  ------   -----     -------  -----
+20    accept   all       0        0
+  condition - saddr ::/0 daddr ::/0 /* DMZ-IN-6-20 */
+
+10000 drop     all       0        0
+  condition - saddr ::/0 daddr ::/0
+
+--------------------------------------------------------------------------------
+IPv6 Firewall "DMZ-IN-V6":
+
+ Inactive - Not applied to any interfaces or zones.
+
+rule  action   proto     packets  bytes
+----  ------   -----     -------  -----
+10    accept   all       0        0
+  condition - saddr ::/0 daddr ::/0 /* DMZ-IN-V6-10 */
+
+11    accept   all       0        0
+  condition - saddr ::/0 daddr ::/0 /* DMZ-IN-V6-11 */
+
+12    accept   all       0        0
+  condition - saddr ::/0 daddr ::/0 /* DMZ-IN-V6-12 */
+
+13    accept   all       0        0
+  condition - saddr ::/0 daddr ::/0 /* DMZ-IN-V6-13 */
+
+10000 drop     all       0        0
+  condition - saddr ::/0 daddr ::/0
+
+--------------------------------------------------------------------------------
+IPv6 Firewall "DMZ-OUT-6":
+
+ Inactive - Not applied to any interfaces or zones.
+
+rule  action   proto     packets  bytes
+----  ------   -----     -------  -----
+10    accept   all       0        0
+  condition - saddr ::/0 daddr ::/0 match-DST-PORT-GROUP NUJNI /* DMZ-OUT-6-10 *
+              /
+
+10000 drop     all       0        0
+  condition - saddr ::/0 daddr ::/0
+
+--------------------------------------------------------------------------------
+IPv6 Firewall "INTERNAL6":
+
+ Inactive - Not applied to any interfaces or zones.
+
+rule  action   proto     packets  bytes
+----  ------   -----     -------  -----
+10    accept   all       0        0
+  condition - saddr ::/0 daddr ::/0 match-DST-PORT-GROUP NUJNI /* INTERNAL6-10 *
+              /
+
+10000 drop     all       0        0
+  condition - saddr ::/0 daddr ::/0
+
+--------------------------------------------------------------------------------
+IPv6 Firewall "WAN6":
+
+ Active on (eth0,IN)
+
+rule  action   proto     packets  bytes
+----  ------   -----     -------  -----
+10    accept   all       0        0
+  condition - saddr ::/0 daddr ::/0 match-SRC-PORT-GROUP NUJNI match-DST--GROUP
+              WAN6 match-DST-PORT-GROUP NUJNI /* WAN6-10 */
+
+10000 drop     all       578      217464
+  condition - saddr ::/0 daddr ::/0
+
+--------------------------------------------------------------------------------
+IPv6 Firewall "nptv6":
+
+ Inactive - Not applied to any interfaces or zones.
+
+rule  action   proto     packets  bytes
+----  ------   -----     -------  -----
+1     accept   all       0        0
+  condition - saddr ::/0 daddr ::/0 nptv6-1 */
+
+10000 drop     all       74       6180
+  condition - saddr ::/0 daddr ::/0
 ```
  
 #### Javni Ubuntu strežnik
